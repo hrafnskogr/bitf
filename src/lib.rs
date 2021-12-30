@@ -4,15 +4,8 @@
  *        size can be: u8 / u16 / u32 / u64 / u128
  *        ordering can be: Lsb or Msb
  *        when setting the attribute to msb, the first declared field
- *        will set on the most significant bit, and the other way around
+ *        will be set on the most significant bit, and the other way around
  *        when using the lsb mode
- *
- * TODO:
- * Generate a proper documentation
- * Implement a pretty print for the bitfield
- * Skip the implemenation of fields defined as reserved (or not?)
- * Implement a check to fail if the bitfield is too small to hold every field
- *
  */
 
 extern crate proc_macro;
