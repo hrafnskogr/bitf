@@ -38,8 +38,8 @@ Considering the following bitfield:
 | | | | | | | |_ field1    - Size 1
 | | | | | | |___ field2    - Size 1
 | | | | | |_____ field3    - Size 1
-| | |_|_|_______ reserved  - Size 3
-|_|____________  field4    - Size 2
+| |  \|/________ reserved  - Size 3
+\ /_____________ field4    - Size 2
 
 ```     
 It can be achieved with the following declaration and macro usage
