@@ -11,6 +11,8 @@ use syn::{ItemStruct, Field, Ident};
 use syn::parse::{Parse, ParseBuffer};
 
 
+static ERR_FORMAT: &str = "Expected format: any_field_name_intSize";
+
 #[derive(Debug)]
 pub struct Strukt
 {
@@ -73,8 +75,8 @@ impl TryFrom<&Field> for BitField
                             syn::Error::new_spanned(field.to_token_stream(), "Expected a structure with named fields. Unnamed field given") } )?;
 
         let ident_str = ident.to_string();
-        let split: Vec<&str> = ident_str.split("_").collect();
-        
+        //let split: Vec<&str> = ident_str.split("_").collect();
+        let split = rsplit(&ident_str)?;
 
         let name: String;
         let bsize: usize;
@@ -86,16 +88,27 @@ impl TryFrom<&Field> for BitField
                                       .or_else(|x| 
                                                { 
                                                  Err( syn::Error::new_spanned(field.to_token_stream(),
-                                                                              format!("{}: {}. Expected format: FieldName_Size", x, ident_str)) )
+                                                                              format!("{}: {}. {}", x, ident_str, ERR_FORMAT)) )
                                                })?;
         }
         else
         {
-            return Err( syn::Error::new_spanned(field.to_token_stream(), "Wrong format, expected: FieldName_Size format.") );
+            return Err( syn::Error::new_spanned(field.to_token_stream(), format!("Wrong field name format. {}.", ERR_FORMAT)) );
         }
 
         Ok(BitField { name, bsize, pos: 0 })
     }
 }
 
+fn rsplit(field: &str) -> Result<Vec<&str>, syn::Error>
+{
+    let idx: usize;
 
+    match field.rfind("_")
+    {
+        Some(x) => idx = x,
+        None => return Err( syn::Error::new_spanned(field.to_token_stream(), format!("Could not find size in field name {}. {}.", field, ERR_FORMAT)) ),
+    }
+
+    Ok( vec![ &field[0..idx], &field[idx+1..field.len()] ] )
+}
