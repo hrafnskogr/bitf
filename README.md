@@ -29,11 +29,6 @@ struct Example
 
 Finally, the internal, full value of the field can be accessed as :
 ``` rust
-struct Example
-{
-  any_case_name_intBitfieldSize: BogusType,
-}
-
 let e = Example::default();
 println!("{}", e.raw);
 
