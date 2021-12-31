@@ -23,10 +23,9 @@ The size and position of the field is based on the field declaration :
 ``` rust
 struct Example
 {
-  CamelCaseName_BitfieldSize: BogusType,
+  any_case_name_intBitfieldSize: BogusType,
 }
 ```
-***Now considering to change the form from CamelCaseName_BitfieldSize to Any_Case_Name_BitfieldSize***
 
 ## Example
 
@@ -48,11 +47,11 @@ It can be achieved with the following declaration and macro usage
 #[bitf(u8, lsb]
 struct MyStruct
 {
-  field1_1:   (),
-  field2_1:   (),
-  field3_1:   (),
+  field_a_1:   (),
+  fieldA_1:   (),
+  FieldA_1:   (),
   reserved_3: (),
-  field4_2:   (),
+  Field_A_2:   (),
 }
 ```
 
@@ -66,8 +65,8 @@ struct MyStruct
 
 impl MyStruct
 {
-  fn field1() -> u8 { ... }
-  fn set_field1(val: u8) { ... }
+  fn field_a() -> u8 { ... }
+  fn set_field_a(val: u8) { ... }
 }
 
 impl Default for MyStruct { ... }
@@ -82,10 +81,10 @@ println!("{:#010b}", bf.field1());
 ```
 
 # TODO
-- A short-sighted decision made it that currently the macro is assuming that the format of the declared field is of the form CamelCaseName_Size. Would be better to implement the form Any_Case_Size
-- Generate proper rust documentation
-- Implement a pretty print for easy bitfield reading
-- Skip the implementation of the fields defined as reserved (or not?)
-- Implement a check to fail if the bitfield is too small to hold every declared field
+- [x] A short-sighted decision made it that currently the macro is assuming that the format of the declared field is of the form CamelCaseName_Size. Would be better to implement the form Any_Case_Size
+- [ ] Generate proper rust documentation
+- [ ] Implement a pretty print for easy bitfield reading
+- [ ] Skip the implementation of the fields defined as reserved (or not?)
+- [ ] Implement a check to fail if the bitfield is too small to hold every declared field
 
 
