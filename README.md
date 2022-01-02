@@ -56,10 +56,10 @@ It can be achieved with the following declaration and macro usage
 struct MyStruct
 {
   field_a_1:   (),
-  fieldA_1:   (),
-  FieldA_1:   (),
+  fieldB_1:   (),
+  FieldC_1:   (),
   reserved_3: (),
-  Field_A_2:   (),
+  Field_D_2:   (),
 }
 ```
 
