@@ -73,8 +73,8 @@ struct MyStruct
 
 impl MyStruct
 {
-  fn field_a() -> u8 { ... }
-  fn set_field_a(val: u8) { ... }
+  pub fn field_a() -> u8 { ... }
+  pub fn set_field_a(val: u8) { ... }
 }
 
 impl Default for MyStruct { ... }
@@ -93,6 +93,6 @@ println!("{:#010b}", bf.field1());
 - [ ] Generate proper rust documentation
 - [ ] Implement a pretty print for easy bitfield reading
 - [ ] Skip the implementation of the fields defined as reserved (or not?)
-- [ ] Implement a check to fail if the bitfield is too small to hold every declared field
+- [x] Implement a check to fail if the bitfield is too small to hold every declared field
 
 
