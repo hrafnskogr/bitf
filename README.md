@@ -94,5 +94,6 @@ println!("{:#010b}", bf.field1());
 - [ ] Implement a pretty print for easy bitfield reading
 - [ ] Skip the implementation of the fields defined as reserved (or not?)
 - [x] Implement a check to fail if the bitfield is too small to hold every declared field
-
-
+- [ ] Add lsb/msb as optional param, make lsb default
+- [ ] Add visibility modifier param. Either all declared field are implemented as pub (default) or specified by user
+- [ ] Add custom return type for each declared field
