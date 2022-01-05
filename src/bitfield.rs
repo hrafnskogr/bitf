@@ -20,6 +20,18 @@ pub struct Strukt
     pub bfields: Vec<BitField>,
 }
 
+impl Strukt
+{
+    pub fn is_large_enough(self: &Self, bitfield_size: usize) -> bool
+    {
+        let total_size: usize = self.bfields.iter()
+                                            .map(|x| x.bsize)
+                                            .sum();
+
+        total_size <= bitfield_size
+    }
+}
+
 impl Parse for Strukt
 {
     fn parse(input: &ParseBuffer) -> syn::Result<Self>
@@ -53,6 +65,7 @@ pub struct BitField
     pub name:   String,
     pub bsize:  usize,
     pub pos:    usize,
+    //pub ty:     Type,
 }
 
 impl BitField

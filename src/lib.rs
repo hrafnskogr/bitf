@@ -1,18 +1,18 @@
-//! # bitf
 //! Rust procedural macro to quickly generate bitfield from a structure.
 //!
-//! ## Usage
+//! # Usage
 //! The macro can be used as following:
-//! ```rust
+//! ```
+//! # stringify!{
 //! #[bitf(size, order)]
-//!
+//! 
 //! // Where size can be:
 //! u8
 //! u16
 //! u32
 //! u64
 //! u128
-//!
+//!};
 //! // And order can be lsb or msb
 //! ```
 //! The size parameter will constrain the total size of the bitfield.
@@ -20,26 +20,30 @@
 //! When setting the order parameter to msb, the first declared field of the struct will be set on the most significant bit, and the other way around when using the lsb mode.
 //!
 //! The size and position of the field is based on the field declaration :
-//! ``` rust
+//! ```
+//! # stringify!{
 //! struct Example
 //! {
 //!   any_case_name_intBitfieldSize: BogusType,
 //! }
+//! };
 //! ```
 //!
 //! Finally, the internal, full value of the field can be accessed as :
-//! ``` rust
+//! ```
+//! # stringify!{
 //! let e = Example::default();
 //! println!("{}", e.raw);
+//! };
 //!
 //! ```
 //! 
 //!
-//! ## Example
+//! # Example
 //!
 //! Considering the following bitfield:
 //!
-//! ```
+//! ```sh
 //! 7             0
 //! 0 0 0 0 0 0 0 0
 //! | | | | | | | |_ field1    - Size 1
@@ -51,8 +55,10 @@
 //! ```
 //! It can be achieved with the following declaration and macro usage
 //!
-//! ```rust
-//! #[bitf(u8, lsb]
+//! ```
+//! # stringify!{
+//! #[bitf(u8, lsb)]
+//! 
 //! struct MyStruct
 //! {
 //!   field_a_1:   (),
@@ -61,11 +67,13 @@
 //!   reserved_3: (),
 //!   Field_A_2:   (),
 //! }
+//! };
 //! ```
 //!
 //! This will generate the following structure and associated methods
 //!
-//! ```rust
+//! ```
+//! # stringify!{
 //! struct MyStruct
 //! {
 //!   pub raw:  u8,
@@ -78,27 +86,18 @@
 //! }
 //!
 //! impl Default for MyStruct { ... }
+//! };
 //! ```
-//!
+//! 
 //! So you can easily set and read values of each defined bitfield:
 //!
-//! ```rust
+//! ```
+//! # stringify!{
 //! let mut bf = MyStruct::default;
 //! bf.set_field1(1);
 //! println!("{:#010b}", bf.field1());
+//! };
 //! ```
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*
  * Main source file for the 'bitf' procedural macro definition
@@ -109,6 +108,7 @@
  *        will be set on the most significant bit, and the other way around
  *        when using the lsb mode
  */
+
 
 extern crate proc_macro;
 
@@ -125,6 +125,13 @@ use macroparams::{MacroParams, Endianness};
 #[proc_macro_attribute]
 pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
 {
+    // Get the parameters passed in the attribute
+    let params = syn::parse_macro_input!(_meta as MacroParams);
+    // Extract type to be returned by the redefined structure, for use in quote! code generation
+    let ret_type = params.ty;
+    // Extract the size of the bitfield, for use in quote! code generation
+    let bfield_size = params.bitfield_size;
+
     // Parse the structure attached to the attribute
     let strukt = syn::parse_macro_input!(_input as Strukt);
     // Extract name for quote! code generation
@@ -132,12 +139,10 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
     // Extract fields for quote! code generation
     let mut bfields = strukt.bfields.clone();
 
-    // Get the parameters passed in the attribute
-    let params = syn::parse_macro_input!(_meta as MacroParams);
-    // Extract type to be returned by the redefined structure, for use in quote! code generation
-    let ret_type = params.ty;
-    // Extract the size of the bitfield, for use in quote! code generation
-    let bfield_size = params.bitfield_size;
+    if !strukt.is_large_enough(bfield_size)
+    {
+        panic!("Selected size for bitfield is not large enough to hold every field");
+    }
 
     // if Endianness enum is set on Big Endien (BE)
     // reverse position of the fields
