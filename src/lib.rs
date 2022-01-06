@@ -18,6 +18,7 @@ mod macroparams;
 
 use proc_macro::TokenStream;
 use quote::{quote, format_ident};
+use syn::Type;
 
 use bitfield::Strukt;
 use macroparams::{MacroParams, Endianness};
@@ -29,7 +30,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
     // Get the parameters passed in the attribute
     let params = syn::parse_macro_input!(_meta as MacroParams);
     // Extract type to be returned by the redefined structure, for use in quote! code generation
-    let ret_type = params.ty;
+    let ret_type = &params.ty;
     // Extract the size of the bitfield, for use in quote! code generation
     let bfield_size = params.bitfield_size;
 
@@ -68,25 +69,46 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
                                 let set_n = format_ident!("set_{}", field.name);
                                 let fsize = field.bsize;
                                 let fpos = field.pos;
+                                /*
+                                let ty = match &field.ty
+                                {
+                                    Type::Path(x) => &field.ty,
+                                    Type::Tuple(x) => 
+                                    {
+                                        &field.ty/*
+                                        if x.elems.len() == 0
+                                        {
+                                            &params.ty
+                                        }
+                                        else
+                                        {
+                                            &field.ty
+                                        }*/
+                                            println!("{:?}",  
+                                    },
+                                    _ => panic!("Unrecognized return type"),
+                                }; */
+
+                                let ty = &field.ty;
 
                                 // Quote! code generation
                                 quote!
                                 {
                                     #[inline]
                                     #[allow(non_snake_case)]
-                                    pub fn #fname(self: &Self) -> #ret_type
+                                    fn #fname(self: &Self) -> #ty
                                     {
                                         let mask = #ret_type::MAX >> (#bfield_size - #fsize) << #fpos;
-                                        (self.raw & mask) >> #fpos
+                                        ((self.raw & mask) >> #fpos) as #ty
                                     }
 
                                     #[inline]
                                     #[allow(non_snake_case)]
-                                    pub fn #set_n(self: &mut Self, val: #ret_type)
+                                    pub fn #set_n(self: &mut Self, val: #ty)
                                     {
                                         let mask = 0xff >> (#bfield_size - #fsize) << #fpos;
                                         let tmp = mask ^ self.raw;
-                                        self.raw = tmp | (val << #fpos);
+                                        self.raw = tmp | ((val as #ret_type) << #fpos);
                                     }
                                 }
                             })

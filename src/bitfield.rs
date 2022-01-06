@@ -6,8 +6,8 @@
  */
 
 use std::convert::TryFrom;
-use quote::ToTokens;
-use syn::{ItemStruct, Field, Ident};
+use quote::{ToTokens, format_ident, quote};
+use syn::{ItemStruct, Field, Ident, Type, TypePath, Path};
 use syn::parse::{Parse, ParseBuffer};
 
 
@@ -48,6 +48,11 @@ impl Parse for Strukt
             bfield.update_pos(pos);
             pos += bfield.bsize;
 
+            if bfield.skip
+            {
+                continue;
+            }
+           
             fields.push(bfield)
         }
 
@@ -65,7 +70,8 @@ pub struct BitField
     pub name:   String,
     pub bsize:  usize,
     pub pos:    usize,
-    //pub ty:     Type,
+    pub skip:   bool,
+    pub ty:     Type,
 }
 
 impl BitField
@@ -87,13 +93,17 @@ impl TryFrom<&Field> for BitField
                         .ok_or_else(|| {
                             syn::Error::new_spanned(field.to_token_stream(), "Expected a structure with named fields. Unnamed field given") } )?;
 
+        // Extract name and size from field declaration
+        // First a split made only on the right part of the field name
         let ident_str = ident.to_string();
-        //let split: Vec<&str> = ident_str.split("_").collect();
         let split = rsplit(&ident_str)?;
 
         let name: String;
         let bsize: usize;
 
+        // If the field has been effectively split in 2 parts
+        // Then we can take the first part as the name
+        // And try to convert the second part as a number
         if split.len() == 2
         {
             name = String::from(split[0]);
@@ -106,10 +116,30 @@ impl TryFrom<&Field> for BitField
         }
         else
         {
+            // If we don't have 2 parts it probably means that the format is wrong
             return Err( syn::Error::new_spanned(field.to_token_stream(), format!("Wrong field name format. {}.", ERR_FORMAT)) );
         }
 
-        Ok(BitField { name, bsize, pos: 0 })
+        // If the name is "_reserved, we set the skip value of the BitField struct as false
+        // This field will not be implemented
+        let skip: bool = &name == "_reserved";
+
+        // Conversion of the return type
+        /*let ty: Ident = match field.ty
+        {
+            syn::Tuple = field.ty as Ident,
+            syn::Path => field.ty.segments
+            _ => return Err(syn::Error::new_spanned(field.to_token_stream(), format!("Unrecognized field type")),
+        }*/
+        /*
+        match &field.ty
+        {
+            Type::Path(x) => println!("Segments : {:?}", x),
+            Type::Tuple(x) => println!("{:?}", x),
+            _ => println!("{:?}", field.ty),
+        }
+        */
+        Ok(BitField { name, bsize, pos: 0, skip, ty: field.ty.clone() })
     }
 }
 

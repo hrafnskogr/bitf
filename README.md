@@ -1,7 +1,7 @@
 # bitf
 Rust procedural macro to quickly generate bitfield from a structure.
 
-## Usage
+## Usage and syntax
 The macro can be used as following:
 ```text
 #[bitf(size, order)]
@@ -13,13 +13,14 @@ Where size can be:
     u64
     u128
 
-And order can be lsb or msb
+And order can be 'lsb' or 'msb'
 ```
+
 The size parameter will constrain the total size of the bitfield.
 The order parameter will alter the order in which the fields are declared.
 When setting the order parameter to msb, the first declared field of the struct will be set on the most significant bit, and the other way around when using the lsb mode.
 
-Thus, the size and position of the field is based on the field declaration :
+Hence, the size and position of the field is based on the field declaration :
 ```rust
 use bitf::bitf;
 
@@ -29,6 +30,7 @@ struct Example
     any_case_name_2: (),        // () is used as a bogus type
                                 // will be replaced in the near future
                                 // by a more flexible syntax
+    _reserved_4:     (),        // This field will not be implemented
     name_B_2:        (),
 }
 
@@ -38,6 +40,12 @@ let e = Example::default();
 println!("{}", e.raw);
 
 ```
+## Skipping the implementation of a field
+You can use the following syntax when declaring a field to skip its implementation.
+`_reserved_intSize`
+
+In the previous example, the field `_reserved_4` will not have its 4 bits implemented.
+No accessor will be generated for this field.
 
 
 ## Example
@@ -112,7 +120,7 @@ println!("{:#010b}", bf.field_a());
 - [x] A short-sighted decision made it that currently the macro is assuming that the format of the declared field is of the form CamelCaseName_Size. Would be better to implement the form Any_Case_Size
 - [x] Generate proper rust documentation
 - [ ] Implement a pretty print for easy bitfield reading
-- [ ] Skip the implementation of the fields defined as reserved (or not?)
+- [X] Skip the implementation of the fields defined as reserved (or not?). Done: you can mark a field as reserved using the naming convention `_reserved_intSize
 - [x] Implement a check to fail if the bitfield is too small to hold every declared field
 - [ ] Add lsb/msb as optional param, make lsb default
 - [ ] Add visibility modifier param. Either all declared field are implemented as pub (default) or specified by user
