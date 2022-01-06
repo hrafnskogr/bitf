@@ -3,32 +3,37 @@ Rust procedural macro to quickly generate bitfield from a structure.
 
 ## Usage
 The macro can be used as following:
-```rust
+```text
 #[bitf(size, order)]
 
-// Where size can be:
-u8
-u16
-u32
-u64
-u128
+Where size can be:
+    u8
+    u16
+    u32
+    u64
+    u128
 
-// And order can be lsb or msb
+And order can be lsb or msb
 ```
 The size parameter will constrain the total size of the bitfield.
 The order parameter will alter the order in which the fields are declared.
 When setting the order parameter to msb, the first declared field of the struct will be set on the most significant bit, and the other way around when using the lsb mode.
 
-The size and position of the field is based on the field declaration :
-``` rust
+Thus, the size and position of the field is based on the field declaration :
+```rust
+use bitf::bitf;
+
+#[bitf(u8,lsb)]
 struct Example
 {
-  any_case_name_intBitfieldSize: BogusType,
+    any_case_name_2: (),        // () is used as a bogus type
+                                // will be replaced in the near future
+                                // by a more flexible syntax
+    name_B_2:        (),
 }
-```
 
-Finally, the internal, full value of the field can be accessed as :
-``` rust
+// The internal, full value of the field can be accessed as :
+
 let e = Example::default();
 println!("{}", e.raw);
 
@@ -39,27 +44,29 @@ println!("{}", e.raw);
 
 Considering the following bitfield:
 
-```
+```text
 7             0
 0 0 0 0 0 0 0 0
-| | | | | | | |_ field1    - Size 1
-| | | | | | |___ field2    - Size 1
-| | | | | |_____ field3    - Size 1
-| |  \|/________ reserved  - Size 3
-\ /_____________ field4    - Size 2
+| | | | | | | |_ field_a    - Size 1
+| | | | | | |___ fieldB     - Size 1
+| | | | | |_____ fieldC     - Size 1
+| |  \|/________ reserved   - Size 3
+\ /_____________ field_D    - Size 2
 
 ```     
 It can be achieved with the following declaration and macro usage
 
 ```rust
-#[bitf(u8, lsb]
+use bitf::bitf;
+
+#[bitf(u8, lsb)]
 struct MyStruct
 {
-  field_a_1:   (),
-  fieldB_1:   (),
-  FieldC_1:   (),
-  reserved_3: (),
-  Field_D_2:   (),
+    field_a_1:  (),
+    fieldB_1:   (),
+    FieldC_1:   (),
+    reserved_3: (),
+    Field_D_2:  (),
 }
 ```
 
@@ -73,19 +80,32 @@ struct MyStruct
 
 impl MyStruct
 {
-  pub fn field_a() -> u8 { ... }
-  pub fn set_field_a(val: u8) { ... }
+    pub fn field_a(self: &Self) -> u8 { /* bitwise logic */ 0 }
+    pub fn set_field_a(self: &Self, val: u8) { /* bitwise logic */ }
+    pub fn fieldB(self: &Self) -> u8 { /* bitwise logic */ 0 }
+    pub fn set_fieldB(self: &Self, val: u8) { /* bitwise logic */ }
+    /*
+     * And so on...
+     */
+    
 }
 
-impl Default for MyStruct { ... }
-```
+impl Default for MyStruct 
+{ 
+    fn default() -> Self
+    {
+        MyStruct { raw: 0x0 }
+    } 
+}
 
-So you can easily set and read values of each defined bitfield:
+//So you can easily set and read values of each defined bitfield:
 
-```rust
-let mut bf = MyStruct::default;
-bf.set_field1(1);
-println!("{:#010b}", bf.field1());
+let mut bf = MyStruct::default();
+
+bf.set_field_a(1);
+bf.set_fieldB(1);
+println!("{:#010b}", bf.field_a());
+
 ```
 
 # TODO
