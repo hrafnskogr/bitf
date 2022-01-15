@@ -6,8 +6,8 @@
  */
 
 use std::convert::TryFrom;
-use quote::{ToTokens, format_ident, quote};
-use syn::{ItemStruct, Field, Ident, Type, TypePath, Path};
+use quote::ToTokens;
+use syn::{ItemStruct, Field, Ident, Type};
 use syn::parse::{Parse, ParseBuffer};
 
 

@@ -27,11 +27,11 @@ use bitf::bitf;
 #[bitf(u8,lsb)]
 struct Example
 {
-    any_case_name_2: (),        // () is used as a bogus type
-                                // will be replaced in the near future
-                                // by a more flexible syntax
-    _reserved_4:     (),        // This field will not be implemented
-    name_B_2:        (),
+    any_case_name_2: (),        // () is used to specify to use the raw type defined in the attribute (here is u8)
+    _reserved_4:     (),        // This field will not be implemented as the name is _reserved
+    name_B_2:        u16,	// Return type override. The `get` method implemented will return a u16
+    				// Custom types can be used, be will need to implement the From trait
+				// Please see the test file in "test/attribute_macro.rs" for an example
 }
 
 // The internal, full value of the field can be accessed as :

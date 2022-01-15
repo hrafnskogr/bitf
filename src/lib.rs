@@ -30,7 +30,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
     // Get the parameters passed in the attribute
     let params = syn::parse_macro_input!(_meta as MacroParams);
     // Extract type to be returned by the redefined structure, for use in quote! code generation
-    let ret_type = &params.ty;
+    let raw_type = &params.ty;
     // Extract the size of the bitfield, for use in quote! code generation
     let bfield_size = params.bitfield_size;
 
@@ -69,46 +69,80 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
                                 let set_n = format_ident!("set_{}", field.name);
                                 let fsize = field.bsize;
                                 let fpos = field.pos;
-                                /*
-                                let ty = match &field.ty
+                                
+                                // Hell Match
+                                // This match computes which return line should be added
+                                //      either primitive type coercion with the "as" keyword
+                                //      or based on the From trait
+                                //  The latter should be implemented by the user, note that
+                                //  the macro uses the .into() variation. So it is up to the
+                                //  user to either implement the From trait, from which the Into
+                                //  trait will be deducted, or directly the Into trait
+                                let mut ty = raw_type.clone();
+                                let return_line = match &field.ty
                                 {
-                                    Type::Path(x) => &field.ty,
+                                    // If we have something that ressembles a Type
+                                    Type::Path(x) =>
+                                    {
+                                        match x.path.segments[0].ident.to_string().as_ref()
+                                        {
+                                            // Primitive type coercion
+                                            "u8" | "u16" | "u32" | "u64" | "u128" | 
+                                            "i8" | "i16" | "i32" | "i64" | "i128" => 
+                                            {
+                                                //let t = &field.ty;
+                                                //quote!{#t}
+                                                ty = format_ident!("{}", x.path.segments[0].ident);
+                                                quote!{((self.raw & mask) >> #fpos) as #ty}
+                                            },
+                                            // Anything else will need to implement the From trait
+                                            _ => 
+                                            {
+                                                ty = format_ident!("{}", x.path.segments[0].ident);
+                                                quote!{
+                                                    let res = ((self.raw & mask) >> #fpos);
+                                                    res.into()
+                                                    }
+                                            }
+                                        }
+                                    },
+                                    // If we have a Tuple, we consider only the empty one ()
                                     Type::Tuple(x) => 
                                     {
-                                        &field.ty/*
                                         if x.elems.len() == 0
                                         {
-                                            &params.ty
+                                            quote!{ ((self.raw & mask) >> #fpos) as #ty }
                                         }
                                         else
                                         {
-                                            &field.ty
-                                        }*/
-                                            println!("{:?}",  
+                                            panic!("Return type not supported (tuple of multiple elements)");
+                                        }
                                     },
-                                    _ => panic!("Unrecognized return type"),
-                                }; */
-
-                                let ty = &field.ty;
+                                    // Could not recognize what has been supplied
+                                    _ => panic!("Unrecognized return type."),
+                                };
 
                                 // Quote! code generation
+                                // This section generates the impl code for each field on the
+                                // struct (get / set)
                                 quote!
                                 {
                                     #[inline]
                                     #[allow(non_snake_case)]
                                     fn #fname(self: &Self) -> #ty
                                     {
-                                        let mask = #ret_type::MAX >> (#bfield_size - #fsize) << #fpos;
-                                        ((self.raw & mask) >> #fpos) as #ty
+                                        let mask = #raw_type::MAX >> (#bfield_size - #fsize) << #fpos;
+                                        //((self.raw & mask) >> #fpos) as #ty
+                                        #return_line
                                     }
 
                                     #[inline]
                                     #[allow(non_snake_case)]
-                                    pub fn #set_n(self: &mut Self, val: #ty)
+                                    pub fn #set_n(self: &mut Self, val: #raw_type)
                                     {
-                                        let mask = 0xff >> (#bfield_size - #fsize) << #fpos;
+                                        let mask = #raw_type::MAX >> (#bfield_size - #fsize) << #fpos;
                                         let tmp = mask ^ self.raw;
-                                        self.raw = tmp | ((val as #ret_type) << #fpos);
+                                        self.raw = tmp | (val << #fpos);
                                     }
                                 }
                             })
@@ -123,7 +157,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
                 #[derive(Debug)]
                 struct #name
                 {
-                    pub raw: #ret_type,
+                    pub raw: #raw_type,
                 }
 
                 impl Default for #name
