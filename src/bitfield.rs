@@ -13,7 +13,6 @@ use syn::parse::{Parse, ParseBuffer};
 
 static ERR_FORMAT: &str = "Expected format: any_field_name_intSize";
 
-#[derive(Debug)]
 pub struct Strukt
 {
     pub name:    Ident,
@@ -64,7 +63,7 @@ impl Parse for Strukt
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct BitField
 {
     pub name:   String,
