@@ -7,7 +7,7 @@
 
 use std::convert::TryFrom;
 use quote::ToTokens;
-use syn::{ItemStruct, Field, Ident, Type};
+use syn::{ItemStruct, Field, Ident, Type, Attribute};
 use syn::parse::{Parse, ParseBuffer};
 
 
@@ -17,6 +17,7 @@ pub struct Strukt
 {
     pub name:    Ident,
     pub bfields: Vec<BitField>,
+    pub attrs:  Vec<Attribute>,
 }
 
 impl Strukt
@@ -35,6 +36,8 @@ impl Parse for Strukt
 {
     fn parse(input: &ParseBuffer) -> syn::Result<Self>
     {
+        let attrs = input.call(Attribute::parse_outer)?;
+
         let strukt = input.parse::<ItemStruct>()?;
         let mut fields = Vec::new();
 
@@ -59,6 +62,7 @@ impl Parse for Strukt
             {
                 name: strukt.ident,
                 bfields: fields,
+                attrs
             })
     }
 }

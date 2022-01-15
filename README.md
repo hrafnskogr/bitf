@@ -39,6 +39,20 @@ struct Example
 				// Please see the test file in "test/attribute_macro.rs" for an example
 }
 
+When combined to other attributes, make sure to implement it **BEFORE** any `#[derive(..)]` attribute, or the expansion order might (will) fail. 
+
+```text
+#[repr(C)]
+#[allow(dead_code)]
+#[bitf(u8)]
+#[derive(Debug)]
+struct MyStruct
+{
+    fieldA_4:	(),
+    fieldB_4:	(),
+}
+```
+
 // The internal, full value of the field can be accessed as :
 
 let e = Example::default();
@@ -130,4 +144,4 @@ println!("{:#010b}", bf.field_a());
 - [x] Add lsb/msb as optional param, make lsb default
 - [ ] Add visibility modifier param. Either all declared field are implemented as pub (default) or specified by user
 - [x] Add custom return type for each declared field
-- [ ] Support the addition of attribute to the structure
+- [x] Support the addition of attribute to the structure

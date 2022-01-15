@@ -6,8 +6,10 @@
 
 use bitf::*;
 
-
+#[repr(C)]
+#[allow(dead_code)]
 #[bitf(u8, lsb)]
+#[derive(Debug)]
 struct MyBitf
 {
     field_a_1:    u8,
@@ -38,6 +40,7 @@ fn read_set()
 
 }
 
+#[repr(C)]
 #[bitf(u8)]
 struct MyOtherBitf
 {
@@ -68,6 +71,7 @@ fn simple_bitf()
 }
 
 #[bitf(u8)]
+#[repr(C)]
 struct CstBitf
 {
     fieldA_4:   (),

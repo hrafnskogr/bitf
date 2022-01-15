@@ -40,6 +40,8 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
     let name = strukt.name.clone();
     // Extract fields for quote! code generation
     let mut bfields = strukt.bfields.clone();
+    // Extract attributes for quote! final code generation
+    let attrs = strukt.attrs.clone();
 
     if !strukt.is_large_enough(bfield_size)
     {
@@ -154,7 +156,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
     // Implementation of each bitfield method
     TokenStream::from(
         quote! {
-                #[derive(Debug)]
+                #(#attrs)* 
                 struct #name
                 {
                     pub raw: #raw_type,
