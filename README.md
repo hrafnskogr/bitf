@@ -1,6 +1,19 @@
 # bitf
 Rust procedural macro to quickly generate bitfield from a structure.
 
+Features:
+- Any size from 8 to 128 bits
+- Auto implementation of _getters_ and _setters_, and Default.
+- Supports the use of other attribute on the structure
+- Declaration of fields either from the Least Significant Bit or the Most Significant Bit
+- Supports custom return types (primitives and custom types)
+- Supports custom visibility for each field
+- Skip implementation of fields marked as reserved
+
+
+_Default to start declaration of fields from the Least Significant Bit, and to declare all fields as public_
+
+
 ## Usage and syntax
 The macro can be used as following:
 ```text
@@ -9,6 +22,10 @@ The macro can be used as following:
 OR
 
 #[bitf(size, order)]
+
+OR
+
+#[bitf(size, order, vis)]
 
 Where size can be:
     u8
@@ -19,11 +36,18 @@ Where size can be:
 
 And order can be 'lsb' or 'msb'
 ```
-
+#### Size
 The `size` parameter will constrain the total size of the bitfield.
+
+#### Order
 The `order` parameter is optional and will alter the order in which the fields are declared.
 By default this parameter is set to `lsb`.
-When setting the order parameter to msb, the first declared field of the struct will be set on the most significant bit, and the other way around when using the lsb mode.
+When setting the order parameter to `msb`, the first declared field of the struct will be set on the most significant bit, and the other way around when using the lsb mode.
+
+#### Visibility
+The `vis` parameter is optional and will alter the visibility of the declared field. It can be set only to `no_pub`.
+By default, all fields are declared as public, using the flag `no_pub` will deactivate this behaviour and rely on the visibility declared by the user.
+
 
 Hence, the size and position of the field is based on the field declaration :
 ```rust
@@ -145,6 +169,6 @@ println!("{:#010b}", bf.field_a());
 - [X] Skip the implementation of the fields defined as reserved (or not?). Done: you can mark a field as reserved using the naming convention `_reserved_intSize
 - [x] Implement a check to fail if the bitfield is too small to hold every declared field
 - [x] Add lsb/msb as optional param, make lsb default
-- [ ] Add visibility modifier param. Either all declared field are implemented as pub (default) or specified by user
+- [x] Add visibility modifier param. Either all declared field are implemented as pub (default) or specified by user
 - [x] Add custom return type for each declared field
 - [x] Support the addition of attribute to the structure
