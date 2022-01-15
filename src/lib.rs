@@ -129,7 +129,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
                                 {
                                     #[inline]
                                     #[allow(non_snake_case)]
-                                    fn #fname(self: &Self) -> #ty
+                                    pub fn #fname(self: &Self) -> #ty
                                     {
                                         let mask = #raw_type::MAX >> (#bfield_size - #fsize) << #fpos;
                                         //((self.raw & mask) >> #fpos) as #ty
@@ -141,7 +141,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
                                     pub fn #set_n(self: &mut Self, val: #raw_type)
                                     {
                                         let mask = #raw_type::MAX >> (#bfield_size - #fsize) << #fpos;
-                                        let tmp = mask ^ self.raw;
+                                        let tmp = !mask & self.raw;
                                         self.raw = tmp | (val << #fpos);
                                     }
                                 }
@@ -152,7 +152,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
     // Struct redefinition
     // Implementation of Default
     // Implementation of each bitfield method
-    TokenStream::from(
+    let to: TokenStream = TokenStream::from(
         quote! {
                 #[derive(Debug)]
                 struct #name
@@ -177,5 +177,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
                     #(#fields)*
                 }
             }
-        )
+        );
+    println!("{}", to.to_string());
+    to
 }

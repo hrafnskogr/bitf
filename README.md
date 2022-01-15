@@ -4,6 +4,10 @@ Rust procedural macro to quickly generate bitfield from a structure.
 ## Usage and syntax
 The macro can be used as following:
 ```text
+#[bitf(size)]
+
+OR
+
 #[bitf(size, order)]
 
 Where size can be:
@@ -16,8 +20,9 @@ Where size can be:
 And order can be 'lsb' or 'msb'
 ```
 
-The size parameter will constrain the total size of the bitfield.
-The order parameter will alter the order in which the fields are declared.
+The `size` parameter will constrain the total size of the bitfield.
+The `order` parameter is optional and will alter the order in which the fields are declared.
+By default this parameter is set to `lsb`.
 When setting the order parameter to msb, the first declared field of the struct will be set on the most significant bit, and the other way around when using the lsb mode.
 
 Hence, the size and position of the field is based on the field declaration :
@@ -122,6 +127,7 @@ println!("{:#010b}", bf.field_a());
 - [ ] Implement a pretty print for easy bitfield reading
 - [X] Skip the implementation of the fields defined as reserved (or not?). Done: you can mark a field as reserved using the naming convention `_reserved_intSize
 - [x] Implement a check to fail if the bitfield is too small to hold every declared field
-- [ ] Add lsb/msb as optional param, make lsb default
+- [x] Add lsb/msb as optional param, make lsb default
 - [ ] Add visibility modifier param. Either all declared field are implemented as pub (default) or specified by user
 - [x] Add custom return type for each declared field
+- [ ] Support the addition of attribute to the structure

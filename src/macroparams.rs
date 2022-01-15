@@ -32,7 +32,7 @@ impl Parse for MacroParams
         let params = Punctuated::<Ident, Token![,]>::parse_terminated(input).unwrap();
         
         let bsize:   usize;      
-        let endness: Endianness;
+        let mut endness: Endianness = Endianness::Lsb;
 
         match params[0].to_string().as_ref()
         {
@@ -45,11 +45,14 @@ impl Parse for MacroParams
 
         }
 
-        match params[1].to_string().as_ref()
+        if params.len() > 1
         {
-            "lsb" => endness = Endianness::Lsb, 
-            "msb" => endness = Endianness::Msb,
-            _    => { return Err(syn::Error::new(params[1].span(), "Wrong endianness, use on of the following: lsb / msb")); }
+            match params[1].to_string().as_ref()
+            {
+                "lsb" => endness = Endianness::Lsb, 
+                "msb" => endness = Endianness::Msb,
+                _    => { return Err(syn::Error::new(params[1].span(), "Wrong endianness, use on of the following: lsb / msb")); }
+            }
         }
 
         Ok(

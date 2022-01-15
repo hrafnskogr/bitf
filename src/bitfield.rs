@@ -124,21 +124,6 @@ impl TryFrom<&Field> for BitField
         // This field will not be implemented
         let skip: bool = &name == "_reserved";
 
-        // Conversion of the return type
-        /*let ty: Ident = match field.ty
-        {
-            syn::Tuple = field.ty as Ident,
-            syn::Path => field.ty.segments
-            _ => return Err(syn::Error::new_spanned(field.to_token_stream(), format!("Unrecognized field type")),
-        }*/
-        /*
-        match &field.ty
-        {
-            Type::Path(x) => println!("Segments : {:?}", x),
-            Type::Tuple(x) => println!("{:?}", x),
-            _ => println!("{:?}", field.ty),
-        }
-        */
         Ok(BitField { name, bsize, pos: 0, skip, ty: field.ty.clone() })
     }
 }
