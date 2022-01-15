@@ -39,6 +39,13 @@ struct Example
 				// Please see the test file in "test/attribute_macro.rs" for an example
 }
 
+// The internal, full value of the field can be accessed as :
+
+let e = Example::default();
+println!("{}", e.raw);
+
+```
+
 When combined to other attributes, make sure to implement it **BEFORE** any `#[derive(..)]` attribute, or the expansion order might (will) fail. 
 
 ```text
@@ -53,12 +60,6 @@ struct MyStruct
 }
 ```
 
-// The internal, full value of the field can be accessed as :
-
-let e = Example::default();
-println!("{}", e.raw);
-
-```
 ## Skipping the implementation of a field
 You can use the following syntax when declaring a field to skip its implementation.
 `_reserved_intSize`
