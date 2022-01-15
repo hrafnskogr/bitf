@@ -152,7 +152,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
     // Struct redefinition
     // Implementation of Default
     // Implementation of each bitfield method
-    let to: TokenStream = TokenStream::from(
+    TokenStream::from(
         quote! {
                 #[derive(Debug)]
                 struct #name
@@ -177,7 +177,5 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
                     #(#fields)*
                 }
             }
-        );
-    println!("{}", to.to_string());
-    to
+        )
 }

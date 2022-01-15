@@ -7,7 +7,6 @@
 use bitf::*;
 
 
-#[repr(C)]
 #[bitf(u8, lsb)]
 struct MyBitf
 {
