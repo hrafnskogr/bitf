@@ -48,7 +48,9 @@ println!("{}", e.raw);
 
 When combined to other attributes, make sure to implement it **BEFORE** any `#[derive(..)]` attribute, or the expansion order might (will) fail. 
 
-```text
+```rust
+use bitf::bitf;
+
 #[repr(C)]
 #[allow(dead_code)]
 #[bitf(u8)]
