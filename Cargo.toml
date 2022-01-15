@@ -15,6 +15,6 @@ categories = ["data-structures",]
 proc-macro = true
 
 [dependencies]
-syn = { version=">=1.0.84", features=["full", "fold"] }
+syn = { version=">=1.0.84", features=["full", "fold", "extra-traits"] }
 quote = ">=1.0.10"
 proc-macro2 = ">=1.0.34"

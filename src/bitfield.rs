@@ -7,7 +7,7 @@
 
 use std::convert::TryFrom;
 use quote::ToTokens;
-use syn::{ItemStruct, Field, Ident, Type, Attribute};
+use syn::{ItemStruct, Field, Ident, Type, Attribute, Visibility};
 use syn::parse::{Parse, ParseBuffer};
 
 
@@ -15,9 +15,10 @@ static ERR_FORMAT: &str = "Expected format: any_field_name_intSize";
 
 pub struct Strukt
 {
-    pub name:    Ident,
-    pub bfields: Vec<BitField>,
-    pub attrs:  Vec<Attribute>,
+    pub name:       Ident,
+    pub bfields:    Vec<BitField>,
+    pub attrs:      Vec<Attribute>,
+    pub vis:        Visibility,
 }
 
 impl Strukt
@@ -37,7 +38,8 @@ impl Parse for Strukt
     fn parse(input: &ParseBuffer) -> syn::Result<Self>
     {
         let attrs = input.call(Attribute::parse_outer)?;
-
+        
+        let vis = input.parse::<Visibility>()?;
         let strukt = input.parse::<ItemStruct>()?;
         let mut fields = Vec::new();
 
@@ -46,7 +48,7 @@ impl Parse for Strukt
         for field in strukt.fields
         {
             let mut bfield = BitField::try_from(&field)?;
-
+            
             bfield.update_pos(pos);
             pos += bfield.bsize;
 
@@ -62,7 +64,8 @@ impl Parse for Strukt
             {
                 name: strukt.ident,
                 bfields: fields,
-                attrs
+                attrs,
+                vis,
             })
     }
 }
@@ -75,6 +78,7 @@ pub struct BitField
     pub pos:    usize,
     pub skip:   bool,
     pub ty:     Type,
+    pub vis: Visibility,
 }
 
 impl BitField
@@ -95,6 +99,12 @@ impl TryFrom<&Field> for BitField
                         .as_ref()
                         .ok_or_else(|| {
                             syn::Error::new_spanned(field.to_token_stream(), "Expected a structure with named fields. Unnamed field given") } )?;
+
+        /*let public = match field.vis
+        {
+            Visibility::Public(_) => true,
+            _ => false,
+        };*/
 
         // Extract name and size from field declaration
         // First a split made only on the right part of the field name
@@ -127,7 +137,7 @@ impl TryFrom<&Field> for BitField
         // This field will not be implemented
         let skip: bool = &name == "_reserved";
 
-        Ok(BitField { name, bsize, pos: 0, skip, ty: field.ty.clone() })
+        Ok(BitField { name, bsize, pos: 0, skip, ty: field.ty.clone(), vis: field.vis.clone() })
     }
 }
 

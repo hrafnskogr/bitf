@@ -8,6 +8,7 @@
 use syn::parse::{Parse, ParseBuffer};
 use syn::{Ident, Token};
 use syn::punctuated::Punctuated;
+use proc_macro2::Span;
 
 
 #[derive(Debug)]
@@ -16,6 +17,21 @@ pub struct MacroParams
     pub bitfield_size:  usize,
     pub endianness:     Endianness,
     pub ty:             Ident,
+    pub no_pub:         bool,
+}
+
+impl Default for MacroParams
+{
+    fn default() -> Self
+    {
+        MacroParams
+        {
+            bitfield_size:  0,
+            endianness:     Endianness::Lsb,
+            ty:             Ident::new("pub", Span::call_site()),
+            no_pub:         false,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -30,39 +46,33 @@ impl Parse for MacroParams
     fn parse(input: &ParseBuffer) -> syn::Result<Self>
     {
         let params = Punctuated::<Ident, Token![,]>::parse_terminated(input).unwrap();
+       
+        let mut ret_struct = MacroParams::default();
         
-        let bsize:   usize;      
-        let mut endness: Endianness = Endianness::Lsb;
-
-        match params[0].to_string().as_ref()
+        for p in &params
         {
-            "u8"    => bsize = 8,
-            "u16"   => bsize = 16,
-            "u32"   => bsize = 32,
-            "u64"   => bsize = 64,
-            "u128"  => bsize = 128,
-            _ => { return Err(syn::Error::new(params[0].span(), "Wrong size, use one of the following: u8 / u16 / u32 / u64 / u128")); }
-
-        }
-
-        if params.len() > 1
-        {
-            match params[1].to_string().as_ref()
+            let val = p.to_string();
+            match val.as_ref()
             {
-                "lsb" => endness = Endianness::Lsb, 
-                "msb" => endness = Endianness::Msb,
-                _    => { return Err(syn::Error::new(params[1].span(), "Wrong endianness, use on of the following: lsb / msb")); }
+                "u8" | "u16" | "u32" | "u64" | "u128"   => 
+                {
+                    let size = &val[1..];
+                    ret_struct.bitfield_size = size.parse::<usize>().unwrap(); 
+                    ret_struct.ty = p.clone();
+                },
+                "lsb"   => ret_struct.endianness = Endianness::Lsb,
+                "msb"   => ret_struct.endianness = Endianness::Msb,
+                "no_pub"=> ret_struct.no_pub = true,
+                _ => { return Err(syn::Error::new(p.span(), "Wrong parameter supplied. Parameters can be: 'u8' / 'u16' / 'u32' / 'u64' / 'u128' for size of bitfield.\n 'lsb' / 'msb' for the order of field declaration.\n 'no_pub' to specify by hand which field should be declared as public.")) }
             }
         }
 
-        Ok(
-            MacroParams 
-            {
-                bitfield_size:  bsize,
-                endianness:     endness,
-                ty:             params[0].clone(),
-            }
-        )
+        if ret_struct.bitfield_size == 0
+        {
+            panic!("Error: no size specified. Please specify a size for the bitfield, with one of the following parameter: 'u8' / 'u16' / 'u32' / 'u64' / 'u128'");
+        }
+
+        Ok( ret_struct )
     }
 }
 

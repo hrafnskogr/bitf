@@ -8,7 +8,7 @@ use bitf::*;
 
 #[repr(C)]
 #[allow(dead_code)]
-#[bitf(u8, lsb)]
+#[bitf(lsb, u8)]
 #[derive(Debug)]
 struct MyBitf
 {

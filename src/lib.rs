@@ -42,6 +42,8 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
     let mut bfields = strukt.bfields.clone();
     // Extract attributes for quote! final code generation
     let attrs = strukt.attrs.clone();
+    // Extract the visibility modifier of the struct
+    let vis = strukt.vis.clone();
 
     if !strukt.is_large_enough(bfield_size)
     {
@@ -71,7 +73,9 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
                                 let set_n = format_ident!("set_{}", field.name);
                                 let fsize = field.bsize;
                                 let fpos = field.pos;
+                                let vis = &field.vis;
                                 
+
                                 // Hell Match
                                 // This match computes which return line should be added
                                 //      either primitive type coercion with the "as" keyword
@@ -131,7 +135,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
                                 {
                                     #[inline]
                                     #[allow(non_snake_case)]
-                                    pub fn #fname(self: &Self) -> #ty
+                                    #vis fn #fname(self: &Self) -> #ty
                                     {
                                         let mask = #raw_type::MAX >> (#bfield_size - #fsize) << #fpos;
                                         //((self.raw & mask) >> #fpos) as #ty
@@ -140,7 +144,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
 
                                     #[inline]
                                     #[allow(non_snake_case)]
-                                    pub fn #set_n(self: &mut Self, val: #raw_type)
+                                    #vis fn #set_n(self: &mut Self, val: #raw_type)
                                     {
                                         let mask = #raw_type::MAX >> (#bfield_size - #fsize) << #fpos;
                                         let tmp = !mask & self.raw;
@@ -157,7 +161,7 @@ pub fn bitf(_meta: TokenStream, _input: TokenStream) -> TokenStream
     TokenStream::from(
         quote! {
                 #(#attrs)* 
-                struct #name
+                #vis struct #name
                 {
                     pub raw: #raw_type,
                 }
