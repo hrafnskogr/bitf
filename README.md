@@ -166,7 +166,7 @@ println!("{:#010b}", bf.field_a());
 - [x] A short-sighted decision made it that currently the macro is assuming that the format of the declared field is of the form CamelCaseName_Size. Would be better to implement the form Any_Case_Size
 - [x] Generate proper rust documentation
 - [ ] Implement a pretty print for easy bitfield reading
-- [X] Skip the implementation of the fields defined as reserved (or not?). Done: you can mark a field as reserved using the naming convention `_reserved_intSize
+- [X] Skip the implementation of the fields defined as reserved (or not?). Done: you can mark a field as reserved using the naming convention `_reserved_intSize`
 - [x] Implement a check to fail if the bitfield is too small to hold every declared field
 - [x] Add lsb/msb as optional param, make lsb default
 - [x] Add visibility modifier param. Either all declared field are implemented as pub (default) or specified by user
