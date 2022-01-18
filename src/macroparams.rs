@@ -18,6 +18,7 @@ pub struct MacroParams
     pub endianness:     Endianness,
     pub ty:             Ident,
     pub no_pub:         bool,
+    pub pprint:         bool,
 }
 
 impl Default for MacroParams
@@ -30,6 +31,7 @@ impl Default for MacroParams
             endianness:     Endianness::Lsb,
             ty:             Ident::new("pub", Span::call_site()),
             no_pub:         false,
+            pprint:         false,
         }
     }
 }
@@ -63,6 +65,7 @@ impl Parse for MacroParams
                 "lsb"   => ret_struct.endianness = Endianness::Lsb,
                 "msb"   => ret_struct.endianness = Endianness::Msb,
                 "no_pub"=> ret_struct.no_pub = true,
+                "pp"    => ret_struct.pprint = true,
                 _ => { return Err(syn::Error::new(p.span(), "Wrong parameter supplied. Parameters can be: 'u8' / 'u16' / 'u32' / 'u64' / 'u128' for size of bitfield.\n 'lsb' / 'msb' for the order of field declaration.\n 'no_pub' to specify by hand which field should be declared as public.")) }
             }
         }

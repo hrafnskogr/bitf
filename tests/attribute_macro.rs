@@ -37,7 +37,6 @@ fn read_set()
 
     // Should have 1011 001
     assert_eq!(bitf.raw, 177);
-
 }
 
 #[repr(C)]
@@ -114,3 +113,34 @@ impl From<CustomStr> for u8
     }
 }
 
+#[bitf(u128, pp)]
+struct LongBitfield
+{
+    fielda_2:   (),
+    fieldb_1:   (),
+    fieldc_3:   (),
+    fieldd_14:  (),
+    fielde_20:  (),
+    fieldf_32:  (),
+    fieldg_9:   (),
+    fieldh_1:   (),
+    fieldi_3:   (),
+    fieldj_2:   (),
+    fieldk_4:   (),
+    fieldl_8:   (),
+    fieldm_5:   (),
+    _reserved_16:  (),
+    fieldo_1:   (),
+    fieldp_2:   (),
+    fieldq_1:   (),
+    fieldr_4:   (),
+}
+
+#[test]
+fn pretty_print()
+{
+    let mut long = LongBitfield::default();
+    long.raw = 0xfa12556fab091ab248ee6afcc23a81ac;
+
+    long.pprint();
+}

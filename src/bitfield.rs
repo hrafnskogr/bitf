@@ -15,10 +15,12 @@ static ERR_FORMAT: &str = "Expected format: any_field_name_intSize";
 
 pub struct Strukt
 {
-    pub name:       Ident,
-    pub bfields:    Vec<BitField>,
-    pub attrs:      Vec<Attribute>,
-    pub vis:        Visibility,
+    pub name:       Ident,                  // The name of the structure
+    pub bfields:    Vec<BitField>,          // A vector of all the declared fields 
+    pub attrs:      Vec<Attribute>,         // A vector of all the declared attributes
+    pub vis:        Visibility,             // The visibility modifier of the struct
+    pub map:        Vec<(usize, usize)>,    // A map of the size and accessibility of the bitfields
+                                            //      used to generate the pretty print function
 }
 
 impl Strukt
@@ -44,6 +46,7 @@ impl Parse for Strukt
         let mut fields = Vec::new();
 
         let mut pos: usize = 0;
+        let mut map: Vec<(usize, usize)> = Vec::new();
 
         for field in strukt.fields
         {
@@ -54,11 +57,15 @@ impl Parse for Strukt
 
             if bfield.skip
             {
+                map.push((bfield.bsize, 0));
                 continue;
             }
            
-            fields.push(bfield)
+            map.push((bfield.bsize, 1));
+            fields.push(bfield);
         }
+
+        let map = map.into_iter().rev().collect();
 
         Ok( Self
             {
@@ -66,6 +73,7 @@ impl Parse for Strukt
                 bfields: fields,
                 attrs,
                 vis,
+                map,
             })
     }
 }
@@ -141,6 +149,8 @@ impl TryFrom<&Field> for BitField
     }
 }
 
+// Could have used rsplit_once, found it later...
+// Anyway, this rsplit implement a custom error throw, so it's not all for nothing I guess...
 fn rsplit(field: &str) -> Result<Vec<&str>, syn::Error>
 {
     let idx: usize;
