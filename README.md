@@ -9,6 +9,7 @@ Features:
 - Supports custom return types (primitives and custom types)
 - Supports custom visibility for each field
 - Skip implementation of fields marked as reserved
+- Failsafe to prevent declaring more field than the bitfield can contain
 - Implementation of a Pretty Print associated function: pprint()
 
 
