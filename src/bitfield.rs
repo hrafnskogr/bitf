@@ -108,12 +108,6 @@ impl TryFrom<&Field> for BitField
                         .ok_or_else(|| {
                             syn::Error::new_spanned(field.to_token_stream(), "Expected a structure with named fields. Unnamed field given") } )?;
 
-        /*let public = match field.vis
-        {
-            Visibility::Public(_) => true,
-            _ => false,
-        };*/
-
         // Extract name and size from field declaration
         // First a split made only on the right part of the field name
         let ident_str = ident.to_string();

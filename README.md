@@ -9,23 +9,19 @@ Features:
 - Supports custom return types (primitives and custom types)
 - Supports custom visibility for each field
 - Skip implementation of fields marked as reserved
+- Implementation of a Pretty Print associated function: pprint()
 
 
-_Default to start declaration of fields from the Least Significant Bit, and to declare all fields as public_
+_By default:_
+ - _starts declaration of fields from the Least Significant Bit;_
+ - _declares all fields as public;_
+ - _does not implement the pretty print function;_
 
 
 ## Usage and syntax
 The macro can be used as following:
 ```text
-#[bitf(size)]
-
-OR
-
-#[bitf(size, order)]
-
-OR
-
-#[bitf(size, order, vis)]
+#[bitf(size, opt_arg1, opt_arg2, opt_arg3)]
 
 Where size can be:
     u8
@@ -34,7 +30,11 @@ Where size can be:
     u64
     u128
 
-And order can be 'lsb' or 'msb'
+There are 3 optional parameters:
+Order:  can be 'lsb' or 'msb'
+Visibility: 'no_pub'
+Pretty Print: 'pp'
+
 ```
 #### Size
 The `size` parameter will constrain the total size of the bitfield.
@@ -45,15 +45,16 @@ By default this parameter is set to `lsb`.
 When setting the order parameter to `msb`, the first declared field of the struct will be set on the most significant bit, and the other way around when using the lsb mode.
 
 #### Visibility
-The `vis` parameter is optional and will alter the visibility of the declared field. It can be set only to `no_pub`.
+The `visibility` parameter is optional and will alter the visibility of the declared field. It can be set only to `no_pub`.
 By default, all fields are declared as public, using the flag `no_pub` will deactivate this behaviour and rely on the visibility declared by the user.
+
 
 
 Hence, the size and position of the field is based on the field declaration :
 ```rust
 use bitf::bitf;
 
-#[bitf(u8,lsb)]
+#[bitf(u8, lsb, pp)]
 struct Example
 {
     any_case_name_2: (),        // () is used to specify to use the raw type defined in the attribute (here is u8)
@@ -67,6 +68,9 @@ struct Example
 
 let e = Example::default();
 println!("{}", e.raw);
+
+// and the representation of the bitfield can be accessed via
+e.pprint();
 
 ```
 
@@ -86,7 +90,26 @@ struct MyStruct
 }
 ```
 
-## Skipping the implementation of a field
+#### Pretty Print
+The `Pretty Print` parameter is set throught the `pp` switch.
+This switch will implement an associated set of functions on the structure, accessible through `pprint()`.
+This function will produce the following output (for a 128 bits bitfield):
+
+```text
+
+64     60  59   57  56                 40      35         27     23   21    18  17           7   6     3   2    0
+┌──────┬───┬────┬───┬──────────────────┬───────┬──────────┬──────┬────┬─────┬───┬────────────┬───┬─────┬───┬────┐
+│ 1111 │ 1 │ 01 │ 0 │ rrrrrrrrrrrrrrrr │ 01101 │ 11110101 │ 0110 │ 00 │ 010 │ 0 │ 1000110101 │ 0 │ 110 │ 0 │ 10 │
+└──────┴───┴────┴───┴──────────────────┴───────┴──────────┴──────┴────┴─────┴───┴────────────┴───┴─────┴───┴────┘
+
+```
+The field noted as "rrrrrrrr..." symbolizes a reserved field. Such fields are defined when declared with the name `_reserved_usize`
+
+_Please note that there is not any mechanism of paging or any clever system to adapt the output to the shell size.
+Hence, it will probably fail if you try to print a bitfield of 128 1-byte wide fields, unless you have an exceptionnaly wide screen_
+
+
+## Reserved fields: skipping the implementation of a field
 You can use the following syntax when declaring a field to skip its implementation.
 `_reserved_intSize`
 
@@ -113,13 +136,13 @@ It can be achieved with the following declaration and macro usage
 ```rust
 use bitf::bitf;
 
-#[bitf(u8, lsb)]
+#[bitf(u8)]
 struct MyStruct
 {
     field_a_1:  (),
     fieldB_1:   (),
     FieldC_1:   (),
-    reserved_3: (),
+    _reserved_3: (),
     Field_D_2:  (),
 }
 ```
@@ -165,10 +188,11 @@ println!("{:#010b}", bf.field_a());
 # TODO
 - [x] A short-sighted decision made it that currently the macro is assuming that the format of the declared field is of the form CamelCaseName_Size. Would be better to implement the form Any_Case_Size
 - [x] Generate proper rust documentation
-- [ ] Implement a pretty print for easy bitfield reading
+- [x] Implement a pretty print for easy bitfield reading
 - [X] Skip the implementation of the fields defined as reserved (or not?). Done: you can mark a field as reserved using the naming convention `_reserved_intSize`
 - [x] Implement a check to fail if the bitfield is too small to hold every declared field
 - [x] Add lsb/msb as optional param, make lsb default
 - [x] Add visibility modifier param. Either all declared field are implemented as pub (default) or specified by user
 - [x] Add custom return type for each declared field
 - [x] Support the addition of attribute to the structure
+- [ ] ???
