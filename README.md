@@ -94,7 +94,7 @@ struct MyStruct
 #### Pretty Print
 The `Pretty Print` parameter is set throught the `pp` switch.
 This switch will implement an associated set of functions on the structure, accessible through `pprint()`.
-This function will produce the following output (for a 128 bits bitfield):
+This function will produce the following output (for a 64 bits bitfield):
 
 ```text
 
